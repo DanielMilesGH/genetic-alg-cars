@@ -16,8 +16,8 @@ class AICar(car.Car):
 		self.loc = loc
 		self.startSpeed = startSpeed
 		self.startAngle = startAngle
+		self.selected = False
 		super().__init__(loc, startSpeed, startAngle)
-
 
 	# vision should be straight ahead, straight left, and right right
 	# takes an input of height, width, and not allowed Rects of map
@@ -43,8 +43,9 @@ class AICar(car.Car):
 				straightHits+=1
 
 			# now check with any rectangles
-			if notAllowedRects.clipline((self.x, self.y), (straightX, straightY)):
-				straightHitsRects+=1
+			for r in notAllowedRects:
+				if r.clipline((self.x, self.y), (straightX, straightY)):
+					straightHitsRects+=1
 
 		leftHits = 0
 		leftHitsRects=0
@@ -63,8 +64,9 @@ class AICar(car.Car):
 			elif leftY>height:
 				leftHits+=1
 
-			if notAllowedRects.clipline((self.x, self.y), (leftX, leftY)):
-				leftHitsRects+=1
+			for r in notAllowedRects:
+				if r.clipline((self.x, self.y), (leftX, leftY)):
+					leftHitsRects+=1
 
 		rightHits = 0
 		rightHitsRects=0
@@ -83,8 +85,9 @@ class AICar(car.Car):
 			elif rightY>height:
 				rightHits+=1
 
-			if notAllowedRects.clipline((self.x, self.y), (rightX, rightY)):
-				rightHitsRects+=1
+			for r in notAllowedRects:
+				if r.clipline((self.x, self.y), (rightX, rightY)):
+					rightHitsRects+=1
 
 
 		return [max(straightHits, straightHitsRects), 
