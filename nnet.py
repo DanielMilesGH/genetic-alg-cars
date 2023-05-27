@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.special
+import math
 import random 
 
 MUTATION_WEIGHT_MODIFY_CHANCE = 0.35
@@ -27,7 +27,9 @@ class Nnet:
 		self.weight_hidden_output = np.random.uniform(-0.5, 0.5, size=(self.num_output, self.num_hidden))
 
 		# choosing activation function (to limit output to 0.00 to 1)
-		self.activation_function = lambda x: scipy.special.expit(x) # sigmoid
+		# self.activation_function = lambda x: scipy.special.expit(x) # sigmoid 
+		# manually written sigmoid, to avoid scipy import
+		self.activation_function = lambda x: 1/(1+np.exp(-x))
 
 	def get_outputs(self, inputs_list):
 		# getting list of inputs, and converting it into a 2 dimensional numpy array, [[i1],[i2],[i3]].
