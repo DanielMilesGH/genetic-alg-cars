@@ -14,7 +14,6 @@ make maxvision high enough / car size small enough that this does not matter
 ^^FIXED, colission just checks point. will look weird but works
 '''
 # globals
-PHYSICS_CHECK=False
 START_X = 50
 START_Y = 50
 START_ANGLE = 90
@@ -28,6 +27,7 @@ TURN_SPEED = 30
 VISION_COUNT = 6 # how high resolution their view is (higher=better)
 VISION_RANGE = 500 # how far they can see (divide with vision count for res)
 BASIC_MIDDLE = [pygame.Rect((300, 300, 1400, 360))] 
+FRAMES_UNTIL_COLLISION_CHECK = 3
 # make frames higher checkpoint check lower if cars failing initially
 # if high car count, intitial fails shouldnt be an issue
 FIRST_CHECK_FRAMES = 100
@@ -154,28 +154,21 @@ async def main():
                     sys.exit()
                 # remove selected
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE:
+                    if event.key == pygame.K_RIGHT: # select next
                         aliveList[0].selected=False
-                        aliveList.append(aliveList.pop(0))
-                    if event.key == pygame.K_RETURN:
+                        aliveList.append(aliveList.pop(0)) 
+                    if event.key == pygame.K_RETURN: # kill current with 0 fitness
                         aliveList[0].selected=False
                         aliveList[0].fitness=0
 
                         deceasedList.append(aliveList.pop(0))
-                    if event.key == pygame.K_ESCAPE:
+                    if event.key == pygame.K_ESCAPE: # end current gen
                         genLoop = False
-                    if event.key == pygame.K_TAB:
+                    if event.key == pygame.K_TAB: # TODO WORK THIS OUT
                         REGEN = False
-                    if event.key == pygame.K_SPACE:
+                    if event.key == pygame.K_SPACE: # stop drawing
                         DRAW_THINGS = not DRAW_THINGS
             keys = pygame.key.get_pressed()
-            if keys[pygame.K_RIGHT]:
-                FPS+=1
-                pygame.display.set_caption('FPS: ' + str(clock.get_fps()) + ' NumAlive:'+str(len(aliveList)))   
-
-            elif keys[pygame.K_LEFT]:
-                FPS-=1
-                pygame.display.set_caption('FPS: ' + str(clock.get_fps()) + ' NumAlive:'+str(len(aliveList)))   
 
             if keys[pygame.K_UP]:
                 FPS=1000
@@ -198,19 +191,21 @@ async def main():
                     # print(len(aliveList))
                     pygame.display.set_caption('FPS: ' + str(clock.get_fps()) + ' NumAlive:'+str(len(aliveList)))   
                 # check if it is inside the not allowed region
-                for r in NOT_ALLOWED_RECTS:
-                    if pygame.Rect.colliderect(r,
-                                            #    pygame.Rect(i.x, i.y, CAR_SIZE, CAR_SIZE)):
-                                               pygame.Rect(i.x, i.y, 1, 1)):
+                # we only need to check this every 3 frames realistically
+                if (frameCount % FRAMES_UNTIL_COLLISION_CHECK):
+                    for r in NOT_ALLOWED_RECTS:
+                        if pygame.Rect.colliderect(r,
+                                                #    pygame.Rect(i.x, i.y, CAR_SIZE, CAR_SIZE)):
+                                                pygame.Rect(i.x, i.y, 1, 1)):
 
-                        # TODO UPDATE FITNESS
-                        # i.fitness=0
-                        try:
-                            aliveList.remove(i)
-                            deceasedList.append(i)
-                        except:
-                            pass
-                        pygame.display.set_caption('FPS: ' + str(clock.get_fps()) + ' NumAlive:'+str(len(aliveList)))   
+                            # TODO UPDATE FITNESS
+                            # i.fitness=0
+                            try:
+                                aliveList.remove(i)
+                                deceasedList.append(i)
+                            except:
+                                pass
+                            pygame.display.set_caption('FPS: ' + str(clock.get_fps()) + ' NumAlive:'+str(len(aliveList)))   
 
                 i.checkpointCheck(CHECKPOINTS, CAR_SIZE)
                 i.fitnessUpdate()
@@ -344,7 +339,7 @@ def physicsCheck():
         if keys[pygame.K_UP]:
             raceCar.speedUp(inc=2, maxSpeed=MAX_SPEED)
         raceCar.move((0, 0, X_WIDTH-CAR_SIZE, Y_WIDTH-CAR_SIZE), minSpeed=MIN_SPEED) 
-        draw([raceCar], screen)
+        draw([raceCar], screen, True)
         clock.tick(FPS)
         # print('moveAngle:',raceCar.moveAngle)
         # print('faceAngle:',raceCar.faceAngle)
