@@ -52,7 +52,6 @@ NUM_CARS = 500
 # raceCar = carsList[0]
 
 
-
 # drawing function
 def draw(cars, screen):
     screen.fill((0, 0, 0))
