@@ -11,7 +11,7 @@ import asyncio
 '''KNOWN ISSUES:
 Vision lines are not accounting for the size of the car
 make maxvision high enough / car size small enough that this does not matter
-^^FIXED, colission just checks point. will look weird but works
+^^FIXED, collision just checks point. will look weird but works
 '''
 # globals
 START_X = 50
@@ -19,7 +19,7 @@ START_Y = 50
 START_ANGLE = 90
 X_WIDTH = 1800 # screen width
 Y_WIDTH = 800 # screen height
-CAR_SIZE = 25 # doesn't affect colission, just view
+CAR_SIZE = 25 # doesn't affect collision, just view
 ALLOWED_AREA = 250
 MIN_SPEED = 25 # cars can increase their speed
 MAX_SPEED = 25 # can't be larger than car_size
@@ -29,7 +29,7 @@ VISION_RANGE = 500 # how far they can see (divide with vision count for res)
 BASIC_MIDDLE = [pygame.Rect((300, 300, 1400, 360))] 
 FRAMES_UNTIL_COLLISION_CHECK = 3
 # make frames higher checkpoint check lower if cars failing initially
-# if high car count, intitial fails shouldnt be an issue
+# if high car count, initial fails shouldn't be an issue
 FIRST_CHECK_FRAMES = 100
 FIRST_CHECKPOINT_CHECK = 8
 ADVANCED_OBSTACLES = [pygame.Rect((300, 0, 50, 300)),
@@ -76,7 +76,7 @@ NUM_CARS = 700
 
 
 # drawing function
-def draw(cars, screen, DRAW_THINGS):
+def draw(cars, screen, DRAW_THINGS, bestFitness):
     screen.fill((0, 0, 0))
     if not DRAW_THINGS:
         return 0
@@ -95,14 +95,18 @@ def draw(cars, screen, DRAW_THINGS):
                          3)
     for i in CHECKPOINTS:
         pygame.draw.rect(screen, (0,0,255), i)
+    text_surface = my_font.render("Curr Best: " + str(bestFitness), False, (255, 255, 255))
+    screen.blit(text_surface, (100, 100))
+
     pygame.display.update()
 
-     
 
-
+pygame.font.init()
+my_font = pygame.font.SysFont('Comic Sans MS', 30)
 
 # running func
 async def main():
+    bestFitness = 0
     BEST_FITNESS = 0
     FITTEST=False
     REGEN = True
@@ -143,6 +147,8 @@ async def main():
         # generation loop
         genLoop = True
         while (genLoop) and len(aliveList)>0:
+            # draw the current best
+
             # aliveList[0].selected=True
             frameCount+=1
             # Check for events
@@ -176,7 +182,7 @@ async def main():
                 FPS=30
                 pygame.display.set_caption('FPS: ' + str(clock.get_fps()) + ' NumAlive:'+str(len(aliveList)))   
 
-            draw(aliveList, screen, DRAW_THINGS)
+            draw(aliveList, screen, DRAW_THINGS, bestFitness)
             for i in aliveList:
                 i.quadrantCheck(X_WIDTH, Y_WIDTH, X_WIDTH/8)
                 # print(i.nnet)
@@ -251,7 +257,7 @@ async def main():
         print(frameCount)
         # got out of gen loop, update generation
 
-        #first put everyone in deceased
+        # first put everyone in deceased
         for i in range(len(aliveList)):
             deceasedList.append(aliveList.pop())
         for i in deceasedList:
@@ -260,9 +266,9 @@ async def main():
         # print("list of best:", deceasedList[0].checkpointsHit)
         # print("fitness of best:",deceasedList[0].fitness)
         FITTEST = deceasedList[0]
-
+        bestFitness = FITTEST.fitness
         for i in deceasedList:
-            i.reset(copy.deepcopy(FITTEST.nnet), *AICAR_PARAMS[1:]) # reset, fitness is saved by the ordering of list
+            i.reset(copy.deepcopy(FITTEST.nnet), *AICAR_PARAMS[1:])  # reset, fitness is saved by the ordering of list
 
 
         # # print([i.fitness for i in deceasedList])
