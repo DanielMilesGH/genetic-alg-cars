@@ -21,6 +21,7 @@ class AICar(car.Car):
         self.checkpointsHit = []
         self.quadrants = [(7, 0), (7, 1)]  # will represent the number of quadrants they've entered
         self.speedHistory = [startSpeed]  # used for fitness, TODO SHOULD USE BETTER
+        self.alive = True # testing something here
         super().__init__(loc, startSpeed, startAngle)
 
     # check if it hit a checkpoint
@@ -65,6 +66,7 @@ class AICar(car.Car):
             # now check with any rectangles
             for r in notAllowedRects:
                 if r.clipline((self.x, self.y), (straightX, straightY)):
+                    # print(r.clipline((self.x, self.y), (straightX, straightY)))
                     straightHitsRects += 1
 
         leftHits = 0
